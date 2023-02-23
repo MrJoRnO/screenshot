@@ -1,0 +1,50 @@
+
+stages:
+  - validate
+  - build
+  - upload
+  - deploy
+
+validate:
+  stage: validate
+  image: python:3.7
+  script:
+    - python3 -m py_compile screenshot.py
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  script:
+    - docker build -t screenshot-build .
+    - mkdir artifacts
+    - docker save -o artifacts/docker_image screenshot-build
+  artifacts:
+    paths:
+      - artifacts/
+    
+upload:
+  stage: upload
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  script:
+    - docker load < artifacts/docker_image
+    - docker tag screenshot-build "$DOCKER_USERNAME/screenshot-docker:$IMAGE_TAG"
+    - docker push "$DOCKER_USERNAME/screenshot-docker:$IMAGE_TAG"
+  dependencies:
+    - build
+
+deploy:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker pull "$DOCKER_USERNAME/screenshot-docker:$IMAGE_TAG"
+    - docker run --rm -v $(pwd):/app "$DOCKER_USERNAME/screenshot-docker:$IMAGE_TAG" https://google.com/
