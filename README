@@ -1,0 +1,20 @@
+Project Title
+
+This is a project for taking screenshots of websites using Selenium and Python.
+
+Installation
+
+1. Install Docker on your system if you haven't already. You can download it from https://www.docker.com/get-started/.
+
+2. Pull the Docker image from Docker Hub by running the following command:
+
+   - docker pull noamjorno/screenshot-docker:screenshot
+
+3. Run the Docker container with the following command:
+
+   - docker run --rm -v $(pwd):/app noamjorno/screenshot-docker:screenshot https://google.com/
+
+4. the screenshot.png of the website https://google.com/ will appear in your current folder
+
+
+
